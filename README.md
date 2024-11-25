@@ -191,4 +191,4 @@ npm run lint:fix
 
 ---
 
-This implementation uses **TypeScript**, **NLP with TfIdf**, and **DevRev API** for ticket tagging. It also includes steps for local testing, packaging, and linting. Let me know if you need further assistance! 🚀
+This implementation uses **TypeScript**, **NLP with TfIdf**, and **DevRev API** for ticket tagging. It also includes steps for local testing, packaging, and linting. 🚀
