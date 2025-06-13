@@ -1,194 +1,76 @@
-Intelligent Ticket Tagging System Snap-in
+# 🏷️ DevRev Ticket Tagger
 
-### **File Structure**
+A simple Node.js tool that classifies and tags DevRev tickets using basic NLP techniques (TF-IDF) and the DevRev API. Useful for automating ticket management workflows like categorizing bugs, feature requests, and more.
+
+---
+
+## ✨ Features
+
+* Classifies incoming tickets using TF-IDF text similarity
+* Automatically tags tickets on DevRev via REST API
+* Reasoning is generated for each tag assignment
+* Secure API key usage via `.env`
+
+---
+
+## 🛠️ Tech Stack
+
+* Node.js
+* TypeScript
+* Axios
+* Natural (NLP Library)
+* dotenv
+
+---
+
+## 📁 Project Structure
+
 ```
-- src/
-  - index.ts
-  - fixtures/
-    - classify_ticket_event.json
-- package.json
-- tsconfig.json
+devrev-ticket-tagger/
+├── index.ts             # Main classification and tagging logic
+├── .env                 # Contains DEVREV_API_KEY (not committed)
+├── package.json         # Dependencies and scripts
 ```
 
 ---
 
-### **Implementation**
+## 🔧 Setup Instructions
 
-#### **1. `src/index.ts`**
-This file contains the main logic for ticket classification and tagging.
+1. Clone the repository
+2. Run `npm install`
+3. Create a `.env` file and add your API key:
 
-```typescript
-import axios from "axios";
-import { WordTokenizer, TfIdf } from "natural";
-
-// Initialize tokenizer and TfIdf for basic NLP
-const tokenizer = new WordTokenizer();
-const tfidf = new TfIdf();
-
-// Sample training data for ticket classification
-const trainingData = [
-  { text: "Feature request for adding dark mode", type: "feature request" },
-  { text: "Login button is not working", type: "bug report" },
-  { text: "How can I reset my password?", type: "question" },
-  { text: "User data is not loading", type: "bug report" },
-];
-
-// Train TfIdf model
-trainingData.forEach((ticket) => tfidf.addDocument(ticket.text));
-
-/**
- * Analyze and classify a ticket based on content
- * @param ticketContent - The content of the incoming ticket
- * @returns An object containing the ticket type and explanation
- */
-const classifyTicket = (ticketContent: string) => {
-  let bestMatch = "";
-  let bestScore = -1;
-
-  trainingData.forEach((ticket, index) => {
-    const score = tfidf.tfidf(ticketContent, index);
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = ticket.type;
-    }
-  });
-
-  return {
-    type: bestMatch || "unknown",
-    explanation: `Classified as '${bestMatch}' due to similarity with training data.`,
-  };
-};
-
-/**
- * Function to handle ticket tagging
- * @param event - Incoming event payload containing ticket data
- */
-export const onTicketCreated = async (event: any) => {
-  const ticketId = event.payload.ticketId;
-  const ticketContent = event.payload.content;
-
-  const { type, explanation } = classifyTicket(ticketContent);
-
-  // API call to tag the ticket
-  try {
-    await axios.post(
-      "https://api.devrev.ai/tickets/tag",
-      {
-        ticketId,
-        tags: [type],
-        reasoning: explanation,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.DEVREV_API_KEY}`,
-        }
-      }
-    );
-    console.log(`Ticket ${ticketId} tagged as '${type}'.`);
-  } catch (error) {
-    console.error(`Failed to tag ticket ${ticketId}:`, error.message);
-  }
-};
+```
+DEVREV_API_KEY=your_devrev_api_key_here
 ```
 
----
+4. Run the script:
 
-#### **2. `src/fixtures/classify_ticket_event.json`**
-This file provides test event data.
-
-```json
-{
-  "payload": {
-    "ticketId": "12345",
-    "content": "Request for a new feature to add dark mode"
-  }
-}
-```
-
----
-
-#### **3. `package.json`**
-Define the dependencies and scripts.
-
-```json
-{
-  "name": "intelligent-ticket-tagging",
-  "version": "1.0.0",
-  "main": "src/index.ts",
-  "scripts": {
-    "start": "ts-node",
-    "build": "tsc",
-    "package": "tar -czvf build.tar.gz dist/",
-    "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "eslint 'src/**/*.ts' --fix"
-  },
-  "dependencies": {
-    "axios": "^1.5.0",
-    "natural": "^3.0.1",
-    "dotenv": "^16.3.1"
-  },
-  "devDependencies": {
-    "typescript": "^5.3.0",
-    "eslint": "^8.51.0",
-    "ts-node": "^10.9.1"
-  }
-}
-```
-
----
-
-#### **4. `tsconfig.json`**
-Configure TypeScript settings.
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES6",
-    "module": "CommonJS",
-    "strict": true,
-    "esModuleInterop": true,
-    "outDir": "dist"
-  },
-  "include": ["src/**/*"]
-}
-```
-
----
-
-### **Testing Locally**
-
-#### Install Dependencies
 ```bash
-npm install
-```
-
-#### Run the Snap-in with Test Event
-```bash
-npm run start -- --functionName=onTicketCreated --fixturePath=src/fixtures/classify_ticket_event.json
+npx ts-node index.ts
 ```
 
 ---
 
-### **Packaging the Code**
-```bash
-npm install
-npm run build
-npm run package
+## 🔄 Example Usage
+
+```ts
+const ticketId = "12345";
+const ticketContent = "Feature request to add dark mode";
+await classifyAndTag(ticketId, ticketContent);
 ```
 
 ---
 
-### **Linting**
-To check for lint errors:
-```bash
-npm run lint
-```
+## ✅ License
 
-To auto-fix lint errors:
-```bash
-npm run lint:fix
-```
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-This implementation uses **TypeScript**, **NLP with TfIdf**, and **DevRev API** for ticket tagging. It also includes steps for local testing, packaging, and linting. 🚀
+## 👩‍💻 Author
+
+**Sanya Shresta Jathanna**
+
+* **Portfolio** – [Sanya Shresta Jathanna](https://sanyashresta.netlify.app/)
+* **GitHub** – [@SanyaShresta25](https://github.com/SanyaShresta25)
